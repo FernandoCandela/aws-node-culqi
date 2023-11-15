@@ -1,0 +1,34 @@
+org: fcandelam
+app: aws-node-culqi
+service: aws-node-culqi
+frameworkVersion: '3'
+
+useDotenv: true
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-2
+
+functions:
+  tokenFunction:
+    handler: src/controllers/tokenController.handler
+    events:
+      - httpApi:
+          path: token
+          method: post
+  cardFunction:
+    handler: src/controllers/cardController.handler
+    events:
+      - httpApi:
+          path: card
+          method: get
+
+custom:
+  esbuild:
+    bundle: true
+    minify: false
+
+plugins:
+  - serverless-offline
+  - serverless-esbuild

@@ -1,0 +1,27 @@
+{
+  "name": "aws-node-culqi",
+  "version": "1.0.0",
+  "description": "Aws ",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "serverless offline",
+    "deploy": "serverless deploy",
+    "test": "jest",
+    "test:watch": "jest --watchAll",
+    "test:coverage": "jest --coverage"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.126",
+    "@types/jest": "^29.5.8",
+    "esbuild": "^0.19.5",
+    "jest": "^29.7.0",
+    "serverless": "^3.36.0",
+    "serverless-esbuild": "^1.48.5",
+    "serverless-offline": "^13.2.1",
+    "serverless-plugin-typescript": "^2.1.5",
+    "ts-jest": "^29.1.1",
+    "typescript": "^5.2.2"
+  }
+}
