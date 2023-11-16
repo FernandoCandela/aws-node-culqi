@@ -15,14 +15,14 @@ functions:
     handler: src/controllers/tokenController.handler
     events:
       - httpApi:
-          path: token
+          path: tokens
           method: post
   cardFunction:
     handler: src/controllers/cardController.handler
     events:
       - httpApi:
-          path: card
-          method: get
+          path: charge
+          method: post
 
 custom:
   esbuild:
