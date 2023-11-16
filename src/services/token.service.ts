@@ -25,11 +25,11 @@ export async function createToken(cardData: Card): Promise<string> {
 }
 
 function generateRandomToken(): string {
-    const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-    let token = '';
+    const characters: string = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let token: string = '';
 
-    for (let i = 0; i < 16; i++) {
-        const randomIndex = Math.floor(Math.random() * characters.length);
+    for (let i: number = 0; i < 16; i++) {
+        const randomIndex: number = Math.floor(Math.random() * characters.length);
         token += characters[randomIndex];
     }
 

@@ -26,11 +26,14 @@ functions:
           path: /tokens
           method: post
   cardFunction:
-    handler: src/controllers/cardController.handler
+    handler: src/controllers/chargeController.handler
     events:
       - httpApi:
-          path: /charge
+          path: /charges
           method: post
+    environment:
+      REDIS_HOST: ${env:REDIS_HOST}
+      REDIS_PORT: ${env:REDIS_PORT}
 
 custom:
   esbuild:
