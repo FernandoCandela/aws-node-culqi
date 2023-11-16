@@ -1,43 +1,40 @@
-import crypto from 'crypto';
 import {Card} from "../models/card.model";
-import {Messages} from "../utils/constants";
-import Redis from "ioredis";
-import {RedisClient} from "ioredis/built/connectors/SentinelConnector/types";
+import {TOKEN_EXPIRATION_TIME} from "../utils/constants";
+import {StoredData} from "../models/storedData.model";
+import {storeTokenInRedisDatabase} from "../database/redisDb";
+import {storeTokenInPGDatabase} from "../database/postgreDb";
 
-const TOKEN_EXPIRATION_TIME: number = 15 * 60 * 1000; // 15 minutos en milisegundos
+export async function createToken(cardData: Card): Promise<string> {
+    try {
+        const token: string = generateRandomToken();
+        const expirationTime: number = Date.now() + TOKEN_EXPIRATION_TIME;
+        const storedData: StoredData = {
+            cardData,
+            expirationTime,
+        };
 
-interface StoredData {
-    cardData: Card;
-    expirationTime: number;
+        await storeTokenInRedisDatabase(token, storedData);
+
+        await storeTokenInPGDatabase(token, storedData);
+
+        return token;
+    } catch (error) {
+        console.error(error);
+        throw error;
+    }
 }
 
-export function createToken(cardData: Card): string {
-    const token = crypto.randomBytes(16).toString('hex');
-    const expirationTime = Date.now() + TOKEN_EXPIRATION_TIME;
-    const storedData: StoredData = {
-        cardData,
-        expirationTime,
-    };
+function generateRandomToken(): string {
+    const characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    let token = '';
 
-    storeTokenInDatabase(token, storedData).catch((error) => {
-        console.error(Messages.ERROR_STORING_TOKEN_IN_DATABASE, error);
-    });
+    for (let i = 0; i < 16; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        token += characters[randomIndex];
+    }
 
     return token;
 }
 
-async function storeTokenInDatabase(token: string, data: StoredData): Promise<void> {
-    const redis: Redis = new Redis({
-        host: process.env.REDIS_HOST ?? 'localhost',
-        port: Number(process.env.REDIS_PORT) || 6379,
-    });
 
-    try {
-        await redis.setex(token, TOKEN_EXPIRATION_TIME, JSON.stringify(data));
-        console.log(Messages.STORE_TOKEN_IN_DATABASE, data);
-    } catch (error) {
-        console.error(Messages.ERROR_STORING_TOKEN_IN_DATABASE, error);
-    } finally {
-        redis.quit();
-    }
-}
+

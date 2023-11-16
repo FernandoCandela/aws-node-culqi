@@ -16,6 +16,11 @@ functions:
     environment:
       REDIS_HOST: ${env:REDIS_HOST}
       REDIS_PORT: ${env:REDIS_PORT}
+      POSTGRES_HOST: ${env:POSTGRES_HOST}
+      POSTGRES_DB_PORT: ${env:POSTGRES_DB_PORT}
+      POSTGRES_USER: ${env:POSTGRES_USER}
+      POSTGRES_PASSWORD: ${env:POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME: ${env:POSTGRES_DB_NAME}
     events:
       - httpApi:
           path: /tokens
