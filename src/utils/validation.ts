@@ -2,7 +2,7 @@ import {Card} from "../models/card.model";
 import {ErrorMessages} from "./constants";
 import {CustomError} from "./customError";
 
-export function isValidCardData(body: string | null): Card {
+export function validateCardData(body: string | null): Card {
     if (body === null) {
         throw new CustomError(ErrorMessages.INVALID_CARD_DATA);
     }

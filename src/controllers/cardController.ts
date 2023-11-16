@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda'
 import {buildResponse, buildResponseByCustomError} from "../utils/buildReponseUtils";
-import {isValidCardData} from "../utils/validation";
+import {validateCardData} from "../utils/validation";
 import {Card} from "../models/card.model";
 import {createToken} from "../services/token.service";
 import {ErrorMessages, HttpStatus} from "../utils/constants";
@@ -8,7 +8,7 @@ import {CustomError} from "../utils/customError";
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
-        const cardData: Card = isValidCardData(event.body);
+        const cardData: Card = validateCardData(event.body);
 
         const token: string = createToken(cardData);
 
