@@ -12,14 +12,15 @@ export enum Messages {
     INVALID_EXPIRATION_MONTH = 'Invalid expiration month',
     INVALID_EXPIRATION_YEAR = 'Invalid expiration year',
     INVALID_EMAIL = 'Invalid email',
+    INVALID_TOKEN_PK = 'Invalid token pk',
 }
 
 export enum HttpStatus {
     OK = 200,
-    INTERNAL_SERVER_ERROR = 500,
     BAD_REQUEST = 400,
     UNAUTHORIZED = 401,
     UNPROCESSABLE_ENTITY = 422,
+    INTERNAL_SERVER_ERROR = 500,
 }
 
 export const ErrorMessages = {
@@ -56,12 +57,16 @@ export const ErrorMessages = {
         code: HttpStatus.BAD_REQUEST,
     },
     INVALID_EXPIRATION_YEAR: {
-        message:  Messages.INVALID_EXPIRATION_YEAR,
+        message: Messages.INVALID_EXPIRATION_YEAR,
         code: HttpStatus.BAD_REQUEST,
     },
     INVALID_EMAIL: {
         message: Messages.INVALID_EMAIL,
         code: HttpStatus.BAD_REQUEST,
+    },
+    INVALID_TOKEN_PK: {
+        message: Messages.INVALID_TOKEN_PK,
+        code: HttpStatus.UNAUTHORIZED,
     },
 }
 

@@ -6,7 +6,7 @@ export function buildResponse(statusCode: HttpStatus, body: any = null): APIGate
     let bodyResponse: string = Messages.VOID_RESPONSE;
 
     if (body !== null) {
-        bodyResponse = JSON.stringify(statusCode >= 200 && statusCode < 299
+        bodyResponse = JSON.stringify(statusCode >= 200 && statusCode <= 299
             ? body
             : {error: body});
     }

@@ -3,8 +3,8 @@ import {ErrorMessages} from "./constants";
 import {CustomError} from "./customError";
 import {luhnCheck} from "./luhnAlgorithm";
 
-export function validateCardData(body: string | null): Card {
-    if (body === null) {
+export function validateCardData(body: string | null | undefined): Card {
+    if (body === null || body === undefined || body === "") {
         throw new CustomError(ErrorMessages.INVALID_CARD_DATA);
     }
 
@@ -54,7 +54,7 @@ function isValidExpirationYear(expirationYear: string): boolean {
 }
 
 function isValidEmail(email: string): boolean {
-    const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    const emailRegex: RegExp = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
     if (!emailRegex.test(email)) {
         return false;
@@ -65,4 +65,11 @@ function isValidEmail(email: string): boolean {
     const allowedDomains: string[] = ["gmail.com", "hotmail.com", "yahoo.es"];
 
     return allowedDomains.includes(domain);
+}
+
+export function validateTokenPk(tokenPk: string | undefined): void {
+    const tokenRegex: RegExp = /^Bearer pk_test_[a-zA-Z0-9]{16}$/;
+    if (tokenPk === undefined || !tokenRegex.test(tokenPk)) {
+        throw new CustomError(ErrorMessages.INVALID_TOKEN_PK);
+    }
 }
