@@ -1,4 +1,5 @@
 import {APIGatewayProxyResult} from "aws-lambda";
+import {Messages} from "./messages";
 
 export enum HttpStatus {
     OK = 200,
@@ -7,7 +8,7 @@ export enum HttpStatus {
 }
 
 export function buildResponse(statusCode: HttpStatus, body: any = null): APIGatewayProxyResult {
-    let bodyResponse: string = "void response";
+    let bodyResponse: string = Messages.VOID_RESPONSE;
 
     if (body !== null) {
         bodyResponse = JSON.stringify(statusCode >= 200 && statusCode < 299
