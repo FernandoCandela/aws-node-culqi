@@ -1,31 +1,32 @@
 import {Card} from "../models/card.model";
-import {ErrorMessages} from "./messages";
+import {ErrorMessages} from "./constants";
+import {CustomError} from "./customError";
 
 export function isValidCardData(body: string | null): Card {
     if (body === null) {
-        throw new Error(ErrorMessages.INVALID_CARD_DATA);
+        throw new CustomError(ErrorMessages.INVALID_CARD_DATA);
     }
 
     const cardData: Card = JSON.parse(body);
 
     if (!isValidCardNumber(cardData.cardNumber)) {
-        throw new Error(ErrorMessages.INVALID_CARD_NUMBER);
+        throw new CustomError(ErrorMessages.INVALID_CARD_NUMBER);
     }
 
     if (!isValidCVV(cardData.cvv)) {
-        throw new Error(ErrorMessages.INVALID_CVV);
+        throw new CustomError(ErrorMessages.INVALID_CVV);
     }
 
     if (!isValidExpirationMonth(cardData.expirationMonth)) {
-        throw new Error(ErrorMessages.INVALID_EXPIRATION_MONTH);
+        throw new CustomError(ErrorMessages.INVALID_EXPIRATION_MONTH);
     }
 
     if (!isValidExpirationYear(cardData.expirationYear)) {
-        throw new Error(ErrorMessages.INVALID_EXPIRATION_YEAR);
+        throw new CustomError(ErrorMessages.INVALID_EXPIRATION_YEAR);
     }
 
     if (!isValidEmail(cardData.email)) {
-        throw new Error(ErrorMessages.INVALID_EMAIL);
+        throw new CustomError(ErrorMessages.INVALID_EMAIL);
     }
 
     return cardData;

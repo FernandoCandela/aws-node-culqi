@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import {Card} from "../models/card.model";
-import {Messages} from "../utils/messages";
+import {Messages} from "../utils/constants";
 
 const TOKEN_EXPIRATION_TIME: number = 15 * 60 * 1000; // 15 minutos en milisegundos
 

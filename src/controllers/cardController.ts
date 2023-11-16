@@ -1,9 +1,10 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda'
-import {buildResponse, HttpStatus} from "../utils/utils";
+import {buildResponse, buildResponseByCustomError} from "../utils/buildReponseUtils";
 import {isValidCardData} from "../utils/validation";
 import {Card} from "../models/card.model";
 import {createToken} from "../services/token.service";
-import {ErrorMessages} from "../utils/messages";
+import {ErrorMessages, HttpStatus} from "../utils/constants";
+import {CustomError} from "../utils/customError";
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
@@ -13,8 +14,12 @@ export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEven
 
         return buildResponse(HttpStatus.OK, token);
 
-    } catch (error: Error) {
-        console.error(ErrorMessages.ERROR_CREATING_TOKEN, error);
-        return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message);
+    } catch (error) {
+        if (error instanceof CustomError) {
+            console.error(ErrorMessages.ERROR_CREATING_TOKEN.message, error);
+            return buildResponseByCustomError(error);
+        } else {
+            return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, error.message);
+        }
     }
 };

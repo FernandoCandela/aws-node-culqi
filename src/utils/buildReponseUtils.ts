@@ -1,11 +1,6 @@
 import {APIGatewayProxyResult} from "aws-lambda";
-import {Messages} from "./messages";
-
-export enum HttpStatus {
-    OK = 200,
-    INTERNAL_SERVER_ERROR = 500,
-    BAD_REQUEST = 400,
-}
+import {Messages, HttpStatus} from "./constants";
+import {CustomError} from "./customError";
 
 export function buildResponse(statusCode: HttpStatus, body: any = null): APIGatewayProxyResult {
     let bodyResponse: string = Messages.VOID_RESPONSE;
@@ -18,6 +13,16 @@ export function buildResponse(statusCode: HttpStatus, body: any = null): APIGate
 
     return {
         statusCode: statusCode,
+        body: bodyResponse,
+    };
+}
+
+export function buildResponseByCustomError(customError: CustomError): APIGatewayProxyResult {
+
+    let bodyResponse: string = JSON.stringify({error: customError.message});
+
+    return {
+        statusCode: customError.code,
         body: bodyResponse,
     };
 }
