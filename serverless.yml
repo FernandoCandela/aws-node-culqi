@@ -13,6 +13,9 @@ provider:
 functions:
   tokenFunction:
     handler: src/controllers/tokenController.handler
+    environment:
+      REDIS_HOST: ${env:REDIS_HOST}
+      REDIS_PORT: ${env:REDIS_PORT}
     events:
       - httpApi:
           path: /tokens

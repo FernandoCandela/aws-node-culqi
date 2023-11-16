@@ -1,6 +1,7 @@
 export enum Messages {
     STORE_TOKEN_IN_DATABASE = 'Storing token %s in the database:',
-    VOID_RESPONSE = 'Void response'
+    VOID_RESPONSE = 'Void response',
+    ERROR_STORING_TOKEN_IN_DATABASE = 'Error storing token in the database:',
 }
 
 export enum HttpStatus {

@@ -1,31 +1,43 @@
 import crypto from 'crypto';
 import {Card} from "../models/card.model";
 import {Messages} from "../utils/constants";
+import Redis from "ioredis";
+import {RedisClient} from "ioredis/built/connectors/SentinelConnector/types";
 
 const TOKEN_EXPIRATION_TIME: number = 15 * 60 * 1000; // 15 minutos en milisegundos
 
+interface StoredData {
+    cardData: Card;
+    expirationTime: number;
+}
+
 export function createToken(cardData: Card): string {
-    // Generar un token único utilizando crypto.randomBytes
     const token = crypto.randomBytes(16).toString('hex');
-
-    // Aquí deberías almacenar el token junto con la información de la tarjeta en tu base de datos no relacional con el tiempo de expiración
-
-    // Simulando el almacenamiento en la base de datos no relacional
     const expirationTime = Date.now() + TOKEN_EXPIRATION_TIME;
-    const storedData = {
+    const storedData: StoredData = {
         cardData,
         expirationTime,
     };
 
-    // Simulación de almacenamiento en una base de datos no relacional (por ejemplo, Redis)
-    storeTokenInDatabase(token, storedData);
+    storeTokenInDatabase(token, storedData).catch((error) => {
+        console.error(Messages.ERROR_STORING_TOKEN_IN_DATABASE, error);
+    });
 
     return token;
 }
 
-// Función para simular el almacenamiento en una base de datos no relacional
-function storeTokenInDatabase(token: string, data: any): void {
-    // Simulación de almacenamiento en una base de datos no relacional
-    // Aquí deberías implementar la lógica real de almacenamiento en tu base de datos no relacional
-    console.log(Messages.STORE_TOKEN_IN_DATABASE, data);
+async function storeTokenInDatabase(token: string, data: StoredData): Promise<void> {
+    const redis: Redis = new Redis({
+        host: process.env.REDIS_HOST ?? 'localhost',
+        port: Number(process.env.REDIS_PORT) || 6379,
+    });
+
+    try {
+        await redis.setex(token, TOKEN_EXPIRATION_TIME, JSON.stringify(data));
+        console.log(Messages.STORE_TOKEN_IN_DATABASE, data);
+    } catch (error) {
+        console.error(Messages.ERROR_STORING_TOKEN_IN_DATABASE, error);
+    } finally {
+        redis.quit();
+    }
 }
