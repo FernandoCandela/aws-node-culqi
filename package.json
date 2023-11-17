@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "npm run start-docker && serverless offline",
     "deploy": "serverless deploy --stage prod",
-    "remove": "serverless remove",
+    "remove": "serverless remove --stage prod",
     "test": "jest",
     "test:watch": "jest --watchAll",
     "test:coverage": "jest --coverage",

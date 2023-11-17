@@ -49,7 +49,8 @@ functions:
       securityGroupIds:
         - !GetAtt MyLambdaSecurityGroup.GroupId
       subnetIds:
-        - !Ref MySubnet
+        - !Ref MySubnet1
+        - !Ref MySubnet2
 
   chargeFunction:
     handler: src/controllers/chargeController.handler
@@ -68,11 +69,19 @@ resources:
       Properties:
         CidrBlock: "10.0.0.0/16"
 
-    MySubnet:
+    MySubnet1:
       Type: "AWS::EC2::Subnet"
       Properties:
         VpcId: !Ref MyVPC
         CidrBlock: "10.0.1.0/24"
+        AvailabilityZone: "us-east-2a"
+
+    MySubnet2:
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: !Ref MyVPC
+        CidrBlock: "10.0.2.0/24"
+        AvailabilityZone: "us-east-2b"
 
     MyLambdaSecurityGroup:
       Type: "AWS::EC2::SecurityGroup"
@@ -96,7 +105,7 @@ resources:
       Properties:
         Description: "Subnet Group for ElastiCache"
         SubnetIds:
-          - !Ref MySubnet
+          - !Ref MySubnet1
         CacheSubnetGroupName: "MyElasticacheSubnetGroupNew"
 
     MyElasticacheCluster:
@@ -114,7 +123,8 @@ resources:
       Properties:
         DBSubnetGroupDescription: 'Subnet group for RDS instance'
         SubnetIds:
-          - !Ref MySubnet
+          - !Ref MySubnet1
+          - !Ref MySubnet2
 
     MyRDSInstance:
       Type: 'AWS::RDS::DBInstance'
@@ -122,8 +132,12 @@ resources:
         AllocatedStorage: '5'
         DBInstanceClass: 'db.t2.micro'
         Engine: 'postgres'
-        EngineVersion: '13.3'
+        EngineVersion: '15'
         DeleteAutomatedBackups: true
+        AutoMinorVersionUpgrade: false
+        BackupRetentionPeriod: 0
+        MultiAZ: false
+        MaxAllocatedStorage: '20'
         MasterUsername: ${env:POSTGRES_USER}
         MasterUserPassword: ${env:POSTGRES_PASSWORD}
         DBName: ${env:POSTGRES_DB_NAME}
