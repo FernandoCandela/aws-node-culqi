@@ -2,6 +2,7 @@ import {Card} from "../models/card.model";
 import {ErrorMessages} from "./constants";
 import {CustomError} from "./customError";
 import {luhnCheck} from "./luhnAlgorithm";
+import {APIGatewayProxyEvent} from "aws-lambda";
 
 export function validateCardData(body: string | null | undefined): Card {
     if (body === null || body === undefined || body === "") {
@@ -67,7 +68,8 @@ function isValidEmail(email: string): boolean {
     return allowedDomains.includes(domain);
 }
 
-export function validateTokenPk(tokenPk: string | undefined): void {
+export function validateTokenPk(event: APIGatewayProxyEvent): void {
+    const tokenPk: string | undefined = event.headers['authorization'];
     const tokenRegex: RegExp = /^Bearer pk_test_[a-zA-Z0-9]{16}$/;
     if (tokenPk === undefined || !tokenRegex.test(tokenPk)) {
         throw new CustomError(ErrorMessages.INVALID_TOKEN_PK);
