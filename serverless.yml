@@ -9,13 +9,48 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-2
+  stage: ${opt:stage, 'dev'} # Default to 'dev'
+  iam:
+    role:
+      managedPolicies:
+        - "arn:aws:iam::aws:policy/AmazonElastiCacheFullAccess"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+  redisHost:
+    dev: ${env:REDIS_HOST}
+    prod: !GetAtt MyElasticacheCluster.RedisEndpoint.Address
+  redisPort:
+    dev: ${env:REDIS_PORT}
+    prod: !GetAtt MyElasticacheCluster.RedisEndpoint.Port
+  postgresHost:
+    dev: ${env:POSTGRES_HOST}
+    prod: ${env:POSTGRES_HOST}
+  postgresPort:
+    dev: ${env:POSTGRES_DB_PORT}
+    prod: ${env:POSTGRES_DB_PORT}
+  postgresUser:
+    dev: ${env:POSTGRES_USER}
+    prod: ${env:POSTGRES_USER}
+  postgresPassword:
+    dev: ${env:POSTGRES_PASSWORD}
+    prod: ${env:POSTGRES_PASSWORD}
+  postgresDbName:
+    dev: ${env:POSTGRES_DB_NAME}
+    prod: ${env:POSTGRES_DB_NAME}
 
 functions:
   tokenFunction:
     handler: src/controllers/tokenController.handler
+    dependsOn:
+      - MyLambdaSecurityGroup
+      - MyElasticacheCluster
     environment:
-      REDIS_HOST: ${env:REDIS_HOST}
-      REDIS_PORT: ${env:REDIS_PORT}
+      REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
+      REDIS_PORT: ${self:custom.redisPort.${self:provider.stage}}
       POSTGRES_HOST: ${env:POSTGRES_HOST}
       POSTGRES_DB_PORT: ${env:POSTGRES_DB_PORT}
       POSTGRES_USER: ${env:POSTGRES_USER}
@@ -25,7 +60,13 @@ functions:
       - httpApi:
           path: /tokens
           method: post
-  cardFunction:
+    vpc:
+      securityGroupIds:
+        - !GetAtt MyLambdaSecurityGroup.GroupId
+      subnetIds:
+        - !Ref MySubnet
+
+  chargeFunction:
     handler: src/controllers/chargeController.handler
     events:
       - httpApi:
@@ -34,12 +75,55 @@ functions:
     environment:
       REDIS_HOST: ${env:REDIS_HOST}
       REDIS_PORT: ${env:REDIS_PORT}
+resources:
+  Resources:
+    MyVPC:
+      Type: "AWS::EC2::VPC"
+      Properties:
+        CidrBlock: "10.0.0.0/16"
 
-custom:
-  esbuild:
-    bundle: true
-    minify: false
+    MySubnet:
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: !Ref MyVPC
+        CidrBlock: "10.0.1.0/24"
+
+    MyLambdaSecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "Lambda function security group"
+        VpcId: !Ref MyVPC
+
+    MyElasticacheSecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "ElastiCache security group"
+        VpcId: !Ref MyVPC
+        SecurityGroupIngress:
+          - IpProtocol: "tcp" # Specify TCP protocol
+            FromPort: "6379" # Port 6379
+            ToPort: "6379" # Port 6379
+            CidrIp: "10.0.1.0/24"
+
+    MyElasticacheSubnetGroup:
+      Type: "AWS::ElastiCache::SubnetGroup"
+      Properties:
+        Description: "Subnet Group for ElastiCache"
+        SubnetIds:
+          - !Ref MySubnet
+        CacheSubnetGroupName: "MyElasticacheSubnetGroupNew"
+
+    MyElasticacheCluster:
+      Type: "AWS::ElastiCache::CacheCluster"
+      Properties:
+        CacheNodeType: "cache.t2.micro"
+        Engine: "redis"
+        NumCacheNodes: "1"
+        CacheSubnetGroupName: !Ref MyElasticacheSubnetGroup
+        VpcSecurityGroupIds:
+          - !GetAtt MyElasticacheSecurityGroup.GroupId
 
 plugins:
   - serverless-offline
   - serverless-esbuild
+  - serverless-iam-roles-per-function
