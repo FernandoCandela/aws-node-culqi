@@ -9,26 +9,160 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-2
-
-functions:
-  tokenFunction:
-    handler: src/controllers/tokenController.handler
-    events:
-      - httpApi:
-          path: token
-          method: post
-  cardFunction:
-    handler: src/controllers/cardController.handler
-    events:
-      - httpApi:
-          path: card
-          method: get
+  stage: ${opt:stage, 'dev'}
+  iam:
+    role:
+      managedPolicies:
+        - "arn:aws:iam::aws:policy/AmazonElastiCacheFullAccess"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        - "arn:aws:iam::aws:policy/AmazonRDSFullAccess"
 
 custom:
   esbuild:
     bundle: true
     minify: false
+  redisHost:
+    dev: ${env:REDIS_HOST}
+    prod: !GetAtt MyElasticacheCluster.RedisEndpoint.Address
+  postgresHost:
+    dev: ${env:POSTGRES_HOST}
+    prod: !GetAtt MyRDSInstance.Endpoint.Address
+
+functions:
+  tokenFunction:
+    handler: src/controllers/tokenController.handler
+    dependsOn:
+      - MyLambdaSecurityGroup
+      - MyElasticacheCluster
+      - MyRDSInstance
+    environment:
+      REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
+      REDIS_PORT: ${env:REDIS_PORT}
+      POSTGRES_HOST: ${self:custom.postgresHost.${self:provider.stage}}
+      POSTGRES_DB_PORT: ${env:POSTGRES_DB_PORT}
+      POSTGRES_USER: ${env:POSTGRES_USER}
+      POSTGRES_PASSWORD: ${env:POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME: ${env:POSTGRES_DB_NAME}
+    events:
+      - httpApi:
+          path: /tokens
+          method: post
+    vpc:
+      securityGroupIds:
+        - !GetAtt MyLambdaSecurityGroup.GroupId
+      subnetIds:
+        - !Ref MySubnet1
+        - !Ref MySubnet2
+
+  chargeFunction:
+    handler: src/controllers/chargeController.handler
+    events:
+      - httpApi:
+          path: /charges
+          method: post
+    environment:
+      REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
+      REDIS_PORT: ${env:REDIS_PORT}
+
+resources:
+  Resources:
+    MyVPC:
+      Type: "AWS::EC2::VPC"
+      Properties:
+        CidrBlock: "10.0.0.0/16"
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
+
+    MySubnet1:
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: !Ref MyVPC
+        CidrBlock: "10.0.1.0/24"
+        AvailabilityZone: "us-east-2a"
+
+    MySubnet2:
+      Type: "AWS::EC2::Subnet"
+      Properties:
+        VpcId: !Ref MyVPC
+        CidrBlock: "10.0.2.0/24"
+        AvailabilityZone: "us-east-2b"
+
+    MyLambdaSecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "Lambda function security group"
+        VpcId: !Ref MyVPC
+
+    MyElasticacheSecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "ElastiCache security group"
+        VpcId: !Ref MyVPC
+        SecurityGroupIngress:
+          - IpProtocol: "tcp" # Specify TCP protocol
+            FromPort: ${env:REDIS_PORT} # Port 6379
+            ToPort: ${env:REDIS_PORT} # Port 6379
+            CidrIp: "10.0.1.0/24"
+
+    MyElasticacheSubnetGroup:
+      Type: "AWS::ElastiCache::SubnetGroup"
+      Properties:
+        Description: "Subnet Group for ElastiCache"
+        SubnetIds:
+          - !Ref MySubnet1
+        CacheSubnetGroupName: "MyElasticacheSubnetGroupNew"
+
+    MyElasticacheCluster:
+      Type: "AWS::ElastiCache::CacheCluster"
+      Properties:
+        CacheNodeType: "cache.t2.micro"
+        Engine: "redis"
+        NumCacheNodes: "1"
+        CacheSubnetGroupName: !Ref MyElasticacheSubnetGroup
+        VpcSecurityGroupIds:
+          - !GetAtt MyElasticacheSecurityGroup.GroupId
+
+    MyRDSSecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+        GroupDescription: "RDS security group"
+        VpcId: !Ref MyVPC
+        SecurityGroupIngress:
+          - IpProtocol: "tcp" # Specify TCP protocol
+            FromPort: ${env:POSTGRES_DB_PORT} # Port for PostgreSQL
+            ToPort: ${env:POSTGRES_DB_PORT} # Port for PostgreSQL
+            SourceSecurityGroupId: !Ref MyLambdaSecurityGroup # Allow traffic from any IP
+
+    MyDBSubnetGroup:
+      Type: 'AWS::RDS::DBSubnetGroup'
+      Properties:
+        DBSubnetGroupDescription: 'Subnet group for RDS instance'
+        SubnetIds:
+          - !Ref MySubnet1
+          - !Ref MySubnet2
+
+    MyRDSInstance:
+      Type: 'AWS::RDS::DBInstance'
+      Properties:
+        AllocatedStorage: '5'
+        DBInstanceClass: 'db.t3.micro'
+        Engine: 'postgres'
+        EngineVersion: '15'
+        DeleteAutomatedBackups: true
+        AutoMinorVersionUpgrade: false
+        BackupRetentionPeriod: 0
+        MultiAZ: false
+        MaxAllocatedStorage: '20'
+        MasterUsername: ${env:POSTGRES_USER}
+        MasterUserPassword: ${env:POSTGRES_PASSWORD}
+        DBName: ${env:POSTGRES_DB_NAME}
+        Port: ${env:POSTGRES_DB_PORT}
+        DBSubnetGroupName: !Ref MyDBSubnetGroup
+        PubliclyAccessible: false
+        VPCSecurityGroups:
+          - !GetAtt MyRDSSecurityGroup.GroupId
 
 plugins:
   - serverless-offline
   - serverless-esbuild
+  - serverless-iam-roles-per-function

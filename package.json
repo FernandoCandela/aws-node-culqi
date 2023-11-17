@@ -4,24 +4,33 @@
   "description": "Aws ",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "serverless offline",
-    "deploy": "serverless deploy",
+    "dev": "npm run start-docker && serverless offline",
+    "deploy": "serverless deploy --stage prod",
+    "remove": "serverless remove --stage prod",
     "test": "jest",
     "test:watch": "jest --watchAll",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage",
+    "start-docker": "docker compose up -d",
+    "stop-docker": "docker compose down"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/aws-lambda": "^8.10.126",
     "@types/jest": "^29.5.8",
+    "@types/pg-promise": "^5.4.3",
+    "dotenv": "^16.3.1",
     "esbuild": "^0.19.5",
     "jest": "^29.7.0",
-    "serverless": "^3.36.0",
+    "serverless": "^3.37.0",
     "serverless-esbuild": "^1.48.5",
+    "serverless-iam-roles-per-function": "^3.2.0",
     "serverless-offline": "^13.2.1",
-    "serverless-plugin-typescript": "^2.1.5",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "ioredis": "^5.3.2",
+    "pg-promise": "^11.5.4"
   }
 }

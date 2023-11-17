@@ -1,14 +1,15 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda'
 import {buildResponse, buildResponseByCustomError} from "../utils/buildReponseUtils";
-import {generateToken} from "../services/token.service";
 import {HttpStatus, Messages} from "../utils/constants";
 import {CustomError} from "../utils/customError";
+import {getChargesStatus} from "../services/charge.service";
+import {CardResponse} from "../models/card.model";
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
-        const token: string = await generateToken(event);
+        const cardResponse: CardResponse = await getChargesStatus(event);
 
-        return buildResponse(HttpStatus.OK, token);
+        return buildResponse(HttpStatus.OK, cardResponse);
 
     } catch (error) {
         console.error(Messages.ERROR_CREATING_TOKEN, error);
