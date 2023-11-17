@@ -9,7 +9,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-2
-  stage: ${opt:stage, 'dev'} # Default to 'dev'
+  stage: ${opt:stage, 'dev'}
   iam:
     role:
       managedPolicies:
@@ -23,24 +23,9 @@ custom:
   redisHost:
     dev: ${env:REDIS_HOST}
     prod: !GetAtt MyElasticacheCluster.RedisEndpoint.Address
-  redisPort:
-    dev: ${env:REDIS_PORT}
-    prod: !GetAtt MyElasticacheCluster.RedisEndpoint.Port
   postgresHost:
     dev: ${env:POSTGRES_HOST}
-    prod: ${env:POSTGRES_HOST}
-  postgresPort:
-    dev: ${env:POSTGRES_DB_PORT}
-    prod: ${env:POSTGRES_DB_PORT}
-  postgresUser:
-    dev: ${env:POSTGRES_USER}
-    prod: ${env:POSTGRES_USER}
-  postgresPassword:
-    dev: ${env:POSTGRES_PASSWORD}
-    prod: ${env:POSTGRES_PASSWORD}
-  postgresDbName:
-    dev: ${env:POSTGRES_DB_NAME}
-    prod: ${env:POSTGRES_DB_NAME}
+    prod: !GetAtt MyRDSInstance.Endpoint.Address
 
 functions:
   tokenFunction:
@@ -50,12 +35,12 @@ functions:
       - MyElasticacheCluster
     environment:
       REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
-      REDIS_PORT: ${self:custom.redisPort.${self:provider.stage}}
+      REDIS_PORT: ${env:REDIS_PORT}
       POSTGRES_HOST: ${self:custom.postgresHost.${self:provider.stage}}
-      POSTGRES_DB_PORT: ${self:custom.postgresPort.${self:provider.stage}}
-      POSTGRES_USER: ${self:custom.postgresUser.${self:provider.stage}}
-      POSTGRES_PASSWORD: ${self:custom.postgresPassword.${self:provider.stage}}
-      POSTGRES_DB_NAME: ${self:custom.postgresDbName.${self:provider.stage}}
+      POSTGRES_DB_PORT: ${env:POSTGRES_DB_PORT}
+      POSTGRES_USER: ${env:POSTGRES_USER}
+      POSTGRES_PASSWORD: ${env:POSTGRES_PASSWORD}
+      POSTGRES_DB_NAME: ${env:POSTGRES_DB_NAME}
     events:
       - httpApi:
           path: /tokens
@@ -73,7 +58,7 @@ functions:
           path: /charges
           method: post
     environment:
-      REDIS_HOST: ${env:REDIS_HOST}
+      REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
       REDIS_PORT: ${env:REDIS_PORT}
 
 resources:
@@ -102,8 +87,8 @@ resources:
         VpcId: !Ref MyVPC
         SecurityGroupIngress:
           - IpProtocol: "tcp" # Specify TCP protocol
-            FromPort: "6379" # Port 6379
-            ToPort: "6379" # Port 6379
+            FromPort: ${env:REDIS_PORT} # Port 6379
+            ToPort: ${env:REDIS_PORT} # Port 6379
             CidrIp: "10.0.1.0/24"
 
     MyElasticacheSubnetGroup:
@@ -123,6 +108,29 @@ resources:
         CacheSubnetGroupName: !Ref MyElasticacheSubnetGroup
         VpcSecurityGroupIds:
           - !GetAtt MyElasticacheSecurityGroup.GroupId
+
+    MyDBSubnetGroup:
+      Type: 'AWS::RDS::DBSubnetGroup'
+      Properties:
+        DBSubnetGroupDescription: 'Subnet group for RDS instance'
+        SubnetIds:
+          - !Ref MySubnet
+
+    MyRDSInstance:
+      Type: 'AWS::RDS::DBInstance'
+      Properties:
+        AllocatedStorage: '5'
+        DBInstanceClass: 'db.t2.micro'
+        Engine: 'postgres'
+        EngineVersion: '13.3'
+        DeleteAutomatedBackups: true
+        MasterUsername: ${env:POSTGRES_USER}
+        MasterUserPassword: ${env:POSTGRES_PASSWORD}
+        DBName: ${env:POSTGRES_DB_NAME}
+        Port: ${env:POSTGRES_DB_PORT}
+        DBSubnetGroupName: !Ref MyDBSubnetGroup
+        VPCSecurityGroups:
+          - !GetAtt MyLambdaSecurityGroup.GroupId
 
 plugins:
   - serverless-offline
