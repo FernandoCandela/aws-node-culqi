@@ -2,7 +2,7 @@ import {Card} from "../models/card.model";
 import {TOKEN_EXPIRATION_TIME_IN_MILLISECONDS} from "../utils/constants";
 import {StoredData} from "../models/storedData.model";
 import {storeTokenInRedisDatabase} from "../database/redisDb";
-import {storeTokenInPGDatabase} from "../database/postgreDb";
+import {storeTokenInPGDatabase} from "../database/postgreSql";
 import {APIGatewayProxyEvent} from "aws-lambda";
 import {validateCardData, validateTokenPk} from "../utils/validation";
 import {generateRandomToken} from "../utils/utils";

@@ -5,12 +5,12 @@ import {storeTokenInRedisDatabase} from "../../src/database/redisDb";
 import {validateTokenPk, validateCardData} from "../../src/utils/validation";
 import {generateRandomToken} from "../../src/utils/utils";
 import {jest} from '@jest/globals';
-import {storeTokenInPGDatabase} from "../../src/database/postgreDb";
+import {storeTokenInPGDatabase} from "../../src/database/postgreSql";
 import {CustomError} from "../../src/utils/customError";
 import {ErrorMessages} from "../../src/utils/constants";
 
 jest.mock('../../src/database/redisDb');
-jest.mock('../../src/database/postgreDb');
+jest.mock('../../src/database/postgreSql');
 jest.mock('../../src/utils/validation');
 jest.mock('../../src/utils/utils');
 
