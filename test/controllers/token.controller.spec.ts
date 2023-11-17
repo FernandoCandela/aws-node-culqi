@@ -57,6 +57,16 @@ describe('Token Controller', () => {
         expect(buildResponse).toHaveBeenCalledWith(200, mockToken);
     });
 
+    /*it('returns a custom error response when generateToken throws a CustomError', async () => {
+        const mockError: CustomError = new CustomError(ErrorMessages.INTERNAL_SERVER_ERROR);
+        (generateToken as jest.Mock).mockRejectedValue(mockError);
+
+        await handler(mockEvent, context, jest.fn());
+
+        expect(generateToken).toHaveBeenCalledWith(mockEvent);
+        expect(buildResponseByCustomError).toHaveBeenCalledWith(mockError);
+    });*/
+
     it('returns a 500 error response when generateToken throws a non-CustomError', async () => {
         const mockError: Error = new Error('Error');
         (generateToken as jest.Mock).mockRejectedValue(mockError);
