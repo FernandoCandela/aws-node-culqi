@@ -29,6 +29,10 @@ Ahora, el servidor debería estar corriendo en `http://localhost:3000`.
 
 Para ejecutar las pruebas, utiliza `npm run test:coverage`.
 
-## Despliegue en AWS
+## Despliegue de Stack en AWS
 
 Para desplegar el proyecto, usa el siguiente comando: `npm run deploy`.
+
+## Remover Stack en AWS
+
+Para desplegar el proyecto, usa el siguiente comando: `npm run remove`.
