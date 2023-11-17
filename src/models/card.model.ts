@@ -7,7 +7,7 @@ export interface Card {
 }
 
 export interface CardResponse {
-    cardNumber: string;
+    cardNumber: number;
     expirationMonth: string;
     expirationYear: string;
     email: string;

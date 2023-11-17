@@ -1,5 +1,5 @@
 import {Card} from "../models/card.model";
-import {TOKEN_EXPIRATION_TIME} from "../utils/constants";
+import {TOKEN_EXPIRATION_TIME_IN_MILLISECONDS} from "../utils/constants";
 import {StoredData} from "../models/storedData.model";
 import {storeTokenInRedisDatabase} from "../database/redisDb";
 import {storeTokenInPGDatabase} from "../database/postgreDb";
@@ -18,7 +18,7 @@ export async function generateToken(event: APIGatewayProxyEvent): Promise<string
 async function createToken(cardData: Card): Promise<string> {
     try {
         const token: string = generateRandomToken();
-        const expirationTime: number = Date.now() + TOKEN_EXPIRATION_TIME;
+        const expirationTime: number = Date.now() + TOKEN_EXPIRATION_TIME_IN_MILLISECONDS;
         const storedData: StoredData = {
             cardData,
             expirationTime,

@@ -75,3 +75,17 @@ export function validateTokenPk(event: APIGatewayProxyEvent): void {
         throw new CustomError(ErrorMessages.INVALID_TOKEN_PK);
     }
 }
+
+export function validateToken(body: string | null | undefined): string {
+    if (body === null || body === undefined || body === "") {
+        throw new CustomError(ErrorMessages.INVALID_TOKEN);
+    }
+    const token: string = JSON.parse(body).token;
+
+    const tokenRegex: RegExp = /^[0-9a-zA-Z]{16}$/;
+    if (!tokenRegex.test(token)){
+        throw new CustomError(ErrorMessages.INVALID_TOKEN);
+    }
+
+    return token;
+}
