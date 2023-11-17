@@ -51,11 +51,11 @@ functions:
     environment:
       REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
       REDIS_PORT: ${self:custom.redisPort.${self:provider.stage}}
-      POSTGRES_HOST: ${env:POSTGRES_HOST}
-      POSTGRES_DB_PORT: ${env:POSTGRES_DB_PORT}
-      POSTGRES_USER: ${env:POSTGRES_USER}
-      POSTGRES_PASSWORD: ${env:POSTGRES_PASSWORD}
-      POSTGRES_DB_NAME: ${env:POSTGRES_DB_NAME}
+      POSTGRES_HOST: ${self:custom.postgresHost.${self:provider.stage}}
+      POSTGRES_DB_PORT: ${self:custom.postgresPort.${self:provider.stage}}
+      POSTGRES_USER: ${self:custom.postgresUser.${self:provider.stage}}
+      POSTGRES_PASSWORD: ${self:custom.postgresPassword.${self:provider.stage}}
+      POSTGRES_DB_NAME: ${self:custom.postgresDbName.${self:provider.stage}}
     events:
       - httpApi:
           path: /tokens
@@ -75,6 +75,7 @@ functions:
     environment:
       REDIS_HOST: ${env:REDIS_HOST}
       REDIS_PORT: ${env:REDIS_PORT}
+
 resources:
   Resources:
     MyVPC:
