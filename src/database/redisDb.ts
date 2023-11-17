@@ -1,11 +1,11 @@
 import {StoredData} from "../models/storedData.model";
 import Redis from "ioredis";
-import {redisDbConfig} from "../../config";
 import {
     ErrorMessages,
     Messages, TOKEN_EXPIRATION_TIME_IN_MILLISECONDS
 } from "../utils/constants";
 import {CustomError} from "../utils/customError";
+import {redisDbConfig} from "./config";
 
 export async function storeTokenInRedisDatabase(token: string, data: StoredData): Promise<void> {
     const redis: Redis = new Redis(redisDbConfig);
@@ -23,7 +23,7 @@ export async function storeTokenInRedisDatabase(token: string, data: StoredData)
 export async function getCardRedis(token: string): Promise<StoredData | null> {
     const redis: Redis = new Redis(redisDbConfig);
     try {
-        const data: string = await redis.get(token);
+        const data: string | null = await redis.get(token);
         return data ? JSON.parse(data) : null;
     } catch (error) {
         console.error(Messages.ERROR_GETTING_DATA_FROM_REDIS, error);

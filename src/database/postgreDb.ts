@@ -1,5 +1,5 @@
-import pgPromise from 'pg-promise';
-import {dbConfig} from "../../config";
+import * as pgPromise from 'pg-promise';
+import {dbConfig} from "./config";
 import {StoredData} from "../models/storedData.model";
 import {ErrorMessages, Messages} from "../utils/constants";
 import {CustomError} from "../utils/customError";

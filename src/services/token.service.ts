@@ -30,7 +30,7 @@ async function createToken(cardData: Card): Promise<string> {
 
         return token;
     } catch (error) {
-        console.error(error);
+        console.error(error.message);
         throw error;
     }
 }
