@@ -33,6 +33,7 @@ functions:
     dependsOn:
       - MyLambdaSecurityGroup
       - MyElasticacheCluster
+      - MyRDSInstance
     environment:
       REDIS_HOST: ${self:custom.redisHost.${self:provider.stage}}
       REDIS_PORT: ${env:REDIS_PORT}
@@ -68,6 +69,8 @@ resources:
       Type: "AWS::EC2::VPC"
       Properties:
         CidrBlock: "10.0.0.0/16"
+        EnableDnsSupport: true
+        EnableDnsHostnames: true
 
     MySubnet1:
       Type: "AWS::EC2::Subnet"
@@ -127,7 +130,7 @@ resources:
           - IpProtocol: "tcp" # Specify TCP protocol
             FromPort: ${env:POSTGRES_DB_PORT} # Port for PostgreSQL
             ToPort: ${env:POSTGRES_DB_PORT} # Port for PostgreSQL
-            CidrIp: "10.0.1.0/24" # Allow
+            SourceSecurityGroupId: !Ref MyLambdaSecurityGroup # Allow traffic from any IP
 
     MyDBSubnetGroup:
       Type: 'AWS::RDS::DBSubnetGroup'
@@ -154,6 +157,7 @@ resources:
         DBName: ${env:POSTGRES_DB_NAME}
         Port: ${env:POSTGRES_DB_PORT}
         DBSubnetGroupName: !Ref MyDBSubnetGroup
+        PubliclyAccessible: false
         VPCSecurityGroups:
           - !GetAtt MyRDSSecurityGroup.GroupId
 
