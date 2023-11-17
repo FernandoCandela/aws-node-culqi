@@ -54,7 +54,7 @@ function isValidExpirationYear(expirationYear: string): boolean {
     return year >= currentYear && year <= currentYear + 5;
 }
 
-function isValidEmail(email: string): boolean {
+export function isValidEmail(email: string): boolean {
     const emailRegex: RegExp = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
 
     if (!emailRegex.test(email)) {
