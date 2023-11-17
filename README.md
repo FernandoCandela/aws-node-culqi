@@ -35,4 +35,4 @@ Para desplegar el proyecto, usa el siguiente comando: `npm run deploy`.
 
 ## Remover Stack en AWS
 
-Para desplegar el proyecto, usa el siguiente comando: `npm run remove`.
+Para remover el stack de aws, usa el siguiente comando: `npm run remove`.
