@@ -1,13 +1,13 @@
 export function luhnCheck(cardNumber: string): boolean {
     // Convertir el número de tarjeta a un array de dígitos
-    const digits = cardNumber.split('').map(Number);
+    const digits: number[] = cardNumber.split('').map(Number);
 
     // Reverse the array of digits
-    let sum = 0;
-    let double = false;
+    let sum: number = 0;
+    let double: boolean = false;
 
-    for (let i = digits.length - 1; i >= 0; i--) {
-        let digit = digits[i];
+    for (let i: number = digits.length - 1; i >= 0; i--) {
+        let digit: number = digits[i];
 
         if (double) {
             digit *= 2;

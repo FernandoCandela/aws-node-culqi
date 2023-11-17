@@ -1,24 +1,17 @@
 import {APIGatewayProxyEvent, APIGatewayProxyHandler, APIGatewayProxyResult} from 'aws-lambda'
 import {buildResponse, buildResponseByCustomError} from "../utils/buildReponseUtils";
-import {validateCardData, validateTokenPk} from "../utils/validation";
-import {Card} from "../models/card.model";
-import {createToken} from "../services/token.service";
-import {ErrorMessages, HttpStatus} from "../utils/constants";
+import {generateToken} from "../services/token.service";
+import {HttpStatus, Messages} from "../utils/constants";
 import {CustomError} from "../utils/customError";
 
 export const handler: APIGatewayProxyHandler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     try {
-        const tokenPk: string | undefined = event.headers['authorization'];
-        validateTokenPk(tokenPk);
-
-        const cardData: Card = validateCardData(event.body);
-
-        const token: string = await createToken(cardData);
+        const token: string = await generateToken(event);
 
         return buildResponse(HttpStatus.OK, token);
 
     } catch (error) {
-        console.error(ErrorMessages.ERROR_CREATING_TOKEN.message, error);
+        console.error(Messages.ERROR_CREATING_TOKEN, error);
         if (error instanceof CustomError) {
             return buildResponseByCustomError(error);
         } else {

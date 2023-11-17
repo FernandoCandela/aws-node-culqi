@@ -5,6 +5,7 @@ export enum Messages {
     INTERNAL_SERVER_ERROR = 'Internal Server Error',
     ERROR_STORING_TOKEN_IN_PG = 'Error storing token in PostgreSQL',
     ERROR_STORING_TOKEN_IN_REDIS = 'Error storing token in Redis',
+    ERROR_GETTING_DATA_FROM_REDIS = 'Error getting data from Redis',
     ERROR_CREATING_TOKEN = 'Error creating token',
     INVALID_CARD_DATA = 'Invalid card data: All fields are required',
     INVALID_CARD_NUMBER = 'Invalid card number',
@@ -13,6 +14,8 @@ export enum Messages {
     INVALID_EXPIRATION_YEAR = 'Invalid expiration year',
     INVALID_EMAIL = 'Invalid email',
     INVALID_TOKEN_PK = 'Invalid token pk',
+    INVALID_TOKEN = 'Invalid token',
+    TOKEN_NOT_FOUND_OR_EXPIRED = 'Token not found or expired',
 }
 
 export enum HttpStatus {
@@ -34,6 +37,10 @@ export const ErrorMessages = {
     },
     ERROR_STORING_TOKEN_IN_REDIS: {
         message: Messages.ERROR_STORING_TOKEN_IN_REDIS,
+        code: HttpStatus.INTERNAL_SERVER_ERROR,
+    },
+    ERROR_GETTING_DATA_FROM_REDIS: {
+        message: Messages.ERROR_GETTING_DATA_FROM_REDIS,
         code: HttpStatus.INTERNAL_SERVER_ERROR,
     },
     ERROR_CREATING_TOKEN: {
@@ -68,6 +75,14 @@ export const ErrorMessages = {
         message: Messages.INVALID_TOKEN_PK,
         code: HttpStatus.UNAUTHORIZED,
     },
+    INVALID_TOKEN: {
+        message: Messages.INVALID_TOKEN,
+        code: HttpStatus.UNPROCESSABLE_ENTITY,
+    },
+    TOKEN_NOT_FOUND_OR_EXPIRED:{
+        message: Messages.TOKEN_NOT_FOUND_OR_EXPIRED,
+        code: HttpStatus.BAD_REQUEST,
+    },
 }
 
-export const TOKEN_EXPIRATION_TIME: number = 15 * 60 * 1000;
+export const TOKEN_EXPIRATION_TIME_IN_MILLISECONDS: number = 15 * 60 * 1000;
